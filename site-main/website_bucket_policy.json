@@ -22,7 +22,7 @@
       "Principal": {
         "AWS": "${ci_role_arn}"
       },
-      "Action": "s3:PutObject",
+      "Action": ["s3:PutObject", "s3:PutObjectTagging"],
       "Resource": "arn:aws:s3:::${bucket}/*"
     }
   ]
