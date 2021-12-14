@@ -20,7 +20,7 @@ locals {
   tags = merge(
     var.tags,
     {
-      "domain" = var.domain
+      "domain" = replace(var.domain, "*", "--wildcard--")
     },
   )
 }
@@ -39,8 +39,9 @@ data "template_file" "bucket_policy" {
 }
 
 resource "aws_s3_bucket" "website_bucket" {
-  bucket = var.bucket_name
-  policy = data.template_file.bucket_policy.rendered
+  bucket        = var.bucket_name
+  policy        = data.template_file.bucket_policy.rendered
+  force_destroy = var.force_destroy
 
   website {
     index_document = "index.html"
@@ -68,6 +69,8 @@ data "template_file" "deployer_role_policy_file" {
 }
 
 resource "aws_iam_policy" "site_deployer_policy" {
+  count = var.deployer != null ? 1 : 0
+
   name        = "${var.bucket_name}.deployer"
   path        = "/"
   description = "Policy allowing to publish a new version of the website to the S3 bucket"
@@ -75,9 +78,11 @@ resource "aws_iam_policy" "site_deployer_policy" {
 }
 
 resource "aws_iam_policy_attachment" "site-deployer-attach-user-policy" {
+  count = var.deployer != null ? 1 : 0
+
   name       = "${var.bucket_name}-deployer-policy-attachment"
   users      = [var.deployer]
-  policy_arn = aws_iam_policy.site_deployer_policy.arn
+  policy_arn = aws_iam_policy.site_deployer_policy.0.arn
 }
 
 ################################################################################################################
@@ -167,7 +172,7 @@ resource "aws_cloudfront_distribution" "website_cdn" {
   viewer_certificate {
     acm_certificate_arn      = var.acm-certificate-arn
     ssl_support_method       = "sni-only"
-    minimum_protocol_version = "TLSv1"
+    minimum_protocol_version = var.minimum_client_tls_protocol_version
   }
 
   aliases = [var.domain]

@@ -65,6 +65,8 @@ data "template_file" "deployer_role_policy_file" {
 }
 
 resource "aws_iam_policy" "site_deployer_policy" {
+  count = var.deployer != null ? 1 : 0
+
   name        = "site.${replace(replace(var.domain, ".", "-"), "*", "star")}.deployer"
   path        = "/"
   description = "Policy allowing to publish a new version of the website to the S3 bucket"
@@ -72,9 +74,11 @@ resource "aws_iam_policy" "site_deployer_policy" {
 }
 
 resource "aws_iam_policy_attachment" "staging-site-deployer-attach-user-policy" {
+  count = var.deployer != null ? 1 : 0
+
   name       = "site.${replace(replace(var.domain, ".", "-"), "*", "star")}-deployer-policy-attachment"
   users      = [var.deployer]
-  policy_arn = aws_iam_policy.site_deployer_policy.arn
+  policy_arn = aws_iam_policy.site_deployer_policy.0.arn
 }
 
 ################################################################################################################
@@ -143,7 +147,7 @@ resource "aws_cloudfront_distribution" "website_cdn" {
   viewer_certificate {
     acm_certificate_arn      = var.acm-certificate-arn
     ssl_support_method       = "sni-only"
-    minimum_protocol_version = "TLSv1"
+    minimum_protocol_version = var.minimum_client_tls_protocol_version
   }
 
   aliases = [var.domain]
