@@ -97,12 +97,12 @@ See the [Terraform Modules documentation](https://www.terraform.io/docs/modules/
   bucket redirects not being followed. As a result, this module will use the custom header option.
 
   If this parameter is the empty string, a custom User-Agent header will not be added.
-* `deployer`: the name of an existing IAM user that will be used to push contents to the S3 bucket. This
-  user will get a role policy attached to it, configured to have read/write access to the bucket that
-  will be created.
 * `acm-certificate-arn`: the id of an certificate in AWS Certificate Manager. As this certificate will be
   used on a CloudFront distribution, Amazon's documentation states the certificate must be generated
   in the `us-east-1` region.
+* `deployer`: (Optional) the name of an existing IAM user that will be used to push contents to the S3 bucket. This
+  user will get a role policy attached to it, configured to have read/write access to the bucket that
+  will be created.
 * `default-root-object`: (Optional) default root object to be served by CloudFront. Defaults to `index.html`, but can be e.x. `v1.0.0/index.html` for versioned applications.
 * `not-found-response-enabled`: If specified as `true`, if the upstream returns 404 response code, it will override the response code with `not-found-response-code` and serve `not-found-response-path` file as a body. Defaults to `false`.
 * `not-found-response-path`: response path for the file that should be served on 404. Default to `/404.html`,
@@ -117,6 +117,9 @@ See the [Terraform Modules documentation](https://www.terraform.io/docs/modules/
   Options: `PriceClass_100` | `PriceClass_200` | `PriceClass_All`. Default value = `PriceClass_200`
 * `ipv6`:  (Optional) Enable IPv6 support on CloudFront distribution. Default value = `false`
 * `wait-for-deployment`: (Optional) If enabled, the resource will wait for the distribution status to change from `InProgress` to `Deployed`. Setting this to `false` will skip the process. Default: `true`.
+* `minimum_client_tls_protocol_version`: (Optional) Set the minimum protocol version of the CloudFront certificate.
+  Read the docs on [Supported Protocols and Ciphers](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/secure-connections-supported-viewer-protocols-ciphers.html#secure-connections-supported-ciphers)
+  for supported values. Default value = `TLSv1`
 
 ### Outputs
 
@@ -149,6 +152,9 @@ See the [Terraform Modules documentation](https://www.terraform.io/docs/modules/
   Read [pricing page](https://aws.amazon.com/cloudfront/pricing/) for more details.
   Options: `PriceClass_100` | `PriceClass_200` | `PriceClass_All`. Default value = `PriceClass_200`
 * `ipv6`:  (Optional) Enable IPv6 support on CloudFront distribution. Default value = `false`
+* `minimum_client_tls_protocol_version`: (Optional) Set the minimum protocol version of the CloudFront certificate.
+  Read the docs on [Supported Protocols and Ciphers](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/secure-connections-supported-viewer-protocols-ciphers.html#secure-connections-supported-ciphers)
+  for supported values. Default value = `TLSv1`
 
 ### Outputs
 
