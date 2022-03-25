@@ -146,6 +146,7 @@ See the [Terraform Modules documentation](https://www.terraform.io/docs/modules/
 
 ### Inputs
 
+* `bucket_name`: (Optional) Name of the S3 bucket to create for the redirect site.
 * `tags`: (Optional) Additional key/value pairs to set as tags.
 * `default_root_object`: (Optional) The object that you want CloudFront to return (for example, index.html) when an end user requests the root URL. Default value = `index.html`
 * `price_class`: (Optional) The price class that corresponds with the maximum price that you want to pay for CloudFront service.

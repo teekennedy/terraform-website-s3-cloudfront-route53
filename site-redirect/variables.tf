@@ -7,6 +7,11 @@ variable "domain" {
   type = string
 }
 
+variable "bucket_name" {
+  type    = string
+  default = ""
+}
+
 variable "target" {
   type = string
 }

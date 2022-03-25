@@ -23,13 +23,14 @@ locals {
       "domain" = replace(var.domain, "*", "star")
     },
   )
+  bucket_name = var.bucket_name != "" ? var.bucket_name : "site.${replace(replace(var.domain, ".", "-"), "*", "star")}"
 }
 
 ################################################################################################################
 ## Configure the bucket and static website hosting
 ################################################################################################################
 resource "aws_s3_bucket" "website_bucket" {
-  bucket = "site.${replace(replace(var.domain, ".", "-"), "*", "star")}"
+  bucket = local.bucket_name
 
   //  logging {
   //    target_bucket = "${var.log_bucket}"
@@ -63,12 +64,12 @@ resource "aws_s3_bucket_website_configuration" "website_bucket_website_config" {
 resource "aws_iam_policy" "site_deployer_policy" {
   count = var.deployer != null ? 1 : 0
 
-  name        = "site.${replace(replace(var.domain, ".", "-"), "*", "star")}.deployer"
+  name        = "${local.bucket_name}.deployer"
   path        = "/"
   description = "Policy allowing to publish a new version of the website to the S3 bucket"
   policy = templatefile("${path.module}/deployer_role_policy.json",
     {
-      bucket = "site.${replace(replace(var.domain, ".", "-"), "*", "star")}"
+      bucket = local.bucket_name
     }
   )
 }
@@ -76,7 +77,7 @@ resource "aws_iam_policy" "site_deployer_policy" {
 resource "aws_iam_policy_attachment" "staging-site-deployer-attach-user-policy" {
   count = var.deployer != null ? 1 : 0
 
-  name       = "site.${replace(replace(var.domain, ".", "-"), "*", "star")}-deployer-policy-attachment"
+  name       = "${local.bucket_name}-deployer-policy-attachment"
   users      = [var.deployer]
   policy_arn = aws_iam_policy.site_deployer_policy.0.arn
 }
