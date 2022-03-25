@@ -30,11 +30,6 @@ variable "deployer" {
   default = null
 }
 
-variable "routing_rules" {
-  type    = string
-  default = ""
-}
-
 variable "default-root-object" {
   type    = string
   default = "index.html"
@@ -85,10 +80,10 @@ variable "price_class" {
 
 variable "default_cache_behavior_lambda_function_associations" {
   description = "Optional Lambda@Edge function associations for the Default Cache Behavior (S3 bucket)"
-  default = []
+  default     = []
   type = list(object({
-    event_type = string
-    lambda_arn = string
+    event_type   = string
+    lambda_arn   = string
     include_body = bool
   }))
 }
@@ -136,7 +131,7 @@ variable "minimum_client_tls_protocol_version" {
 }
 
 variable "force_destroy" {
-  type = bool
+  type        = bool
   description = "A boolean that indicates all objects (including any locked objects) should be deleted from the bucket so that the bucket can be destroyed without error. These objects are not recoverable."
-  default = false
+  default     = false
 }
