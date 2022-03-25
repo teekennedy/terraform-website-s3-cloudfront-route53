@@ -28,18 +28,14 @@ locals {
 ################################################################################################################
 ## Configure the bucket and static website hosting
 ################################################################################################################
-data "template_file" "bucket_policy" {
-  template = file("${path.module}/website_bucket_policy.json")
-
-  vars = {
-    bucket = var.bucket_name
-    secret = var.duplicate-content-penalty-secret
-  }
-}
-
 resource "aws_s3_bucket" "website_bucket" {
-  bucket        = var.bucket_name
-  policy        = data.template_file.bucket_policy.rendered
+  bucket = var.bucket_name
+  policy = templatefile(
+    "${path.module}/website_bucket_policy.json", {
+      bucket = var.bucket_name
+      secret = var.duplicate-content-penalty-secret
+  })
+
   force_destroy = var.force_destroy
 
   website {
@@ -59,21 +55,17 @@ resource "aws_s3_bucket" "website_bucket" {
 ################################################################################################################
 ## Configure the credentials and access to the bucket for a deployment user
 ################################################################################################################
-data "template_file" "deployer_role_policy_file" {
-  template = file("${path.module}/deployer_role_policy.json")
-
-  vars = {
-    bucket = var.bucket_name
-  }
-}
-
 resource "aws_iam_policy" "site_deployer_policy" {
   count = var.deployer != null ? 1 : 0
 
   name        = "${var.bucket_name}.deployer"
   path        = "/"
   description = "Policy allowing to publish a new version of the website to the S3 bucket"
-  policy      = data.template_file.deployer_role_policy_file.rendered
+  policy = templatefile("${path.module}/deployer_role_policy.json",
+    {
+      bucket = var.bucket_name
+    }
+  )
 }
 
 resource "aws_iam_policy_attachment" "site-deployer-attach-user-policy" {
