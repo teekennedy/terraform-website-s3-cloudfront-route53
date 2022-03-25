@@ -30,16 +30,6 @@ locals {
 ################################################################################################################
 resource "aws_s3_bucket" "website_bucket" {
   bucket = "site.${replace(replace(var.domain, ".", "-"), "*", "star")}"
-  policy = templatefile("${path.module}/website_redirect_bucket_policy.json",
-    {
-      bucket = "site.${replace(replace(var.domain, ".", "-"), "*", "star")}"
-      secret = var.duplicate-content-penalty-secret
-    }
-  )
-
-  website {
-    redirect_all_requests_to = "https://${var.target}"
-  }
 
   //  logging {
   //    target_bucket = "${var.log_bucket}"
@@ -47,6 +37,24 @@ resource "aws_s3_bucket" "website_bucket" {
   //  }
 
   tags = local.tags
+}
+
+resource "aws_s3_bucket_policy" "website_bucket_policy" {
+  bucket = aws_s3_bucket.website_bucket.id
+  policy = templatefile("${path.module}/website_redirect_bucket_policy.json",
+    {
+      bucket = aws_s3_bucket.website_bucket.id
+      secret = var.duplicate-content-penalty-secret
+    }
+  )
+}
+
+resource "aws_s3_bucket_website_configuration" "website_bucket_website_config" {
+  bucket = aws_s3_bucket.website_bucket.id
+  redirect_all_requests_to {
+    host_name = var.target
+    protocol  = "https"
+  }
 }
 
 ################################################################################################################
@@ -84,7 +92,7 @@ resource "aws_cloudfront_distribution" "website_cdn" {
 
   origin {
     origin_id   = "origin-bucket-${aws_s3_bucket.website_bucket.id}"
-    domain_name = aws_s3_bucket.website_bucket.website_endpoint
+    domain_name = aws_s3_bucket_website_configuration.website_bucket_website_config.website_endpoint
 
     custom_origin_config {
       origin_protocol_policy = "http-only"

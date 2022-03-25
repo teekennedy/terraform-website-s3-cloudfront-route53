@@ -14,7 +14,7 @@ variable "bucket_name" {
 variable "bucket_path" {
   type        = string
   description = "The folder in the S3 bucket to serve the website from."
-  default     = "/"
+  default     = null
 }
 
 variable "duplicate-content-penalty-secret" {

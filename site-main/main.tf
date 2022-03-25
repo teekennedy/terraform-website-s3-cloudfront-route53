@@ -29,19 +29,8 @@ locals {
 ## Configure the bucket and static website hosting
 ################################################################################################################
 resource "aws_s3_bucket" "website_bucket" {
-  bucket = var.bucket_name
-  policy = templatefile(
-    "${path.module}/website_bucket_policy.json", {
-      bucket = var.bucket_name
-      secret = var.duplicate-content-penalty-secret
-  })
-
+  bucket        = var.bucket_name
   force_destroy = var.force_destroy
-
-  website {
-    index_document = "index.html"
-    error_document = "404.html"
-  }
 
   //  logging {
   //    target_bucket = "${var.log_bucket}"
@@ -49,6 +38,25 @@ resource "aws_s3_bucket" "website_bucket" {
   //  }
 
   tags = local.tags
+}
+
+resource "aws_s3_bucket_website_configuration" "website_bucket_website_config" {
+  bucket = aws_s3_bucket.website_bucket.id
+  index_document {
+    suffix = "index.html"
+  }
+  error_document {
+    key = "404.html"
+  }
+}
+
+resource "aws_s3_bucket_policy" "website_bucket_policy" {
+  bucket = aws_s3_bucket.website_bucket.id
+  policy = templatefile(
+    "${path.module}/website_bucket_policy.json", {
+      bucket = var.bucket_name
+      secret = var.duplicate-content-penalty-secret
+  })
 }
 
 ################################################################################################################
@@ -88,7 +96,7 @@ resource "aws_cloudfront_distribution" "website_cdn" {
 
   origin {
     origin_id   = "origin-bucket-${aws_s3_bucket.website_bucket.id}"
-    domain_name = aws_s3_bucket.website_bucket.website_endpoint
+    domain_name = aws_s3_bucket_website_configuration.website_bucket_website_config.website_endpoint
     origin_path = var.bucket_path
 
     custom_origin_config {
